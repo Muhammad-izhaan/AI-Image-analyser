@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision AI Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .button {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .button:hover::before {
+            left: 100%;
+        }
+
+        .loader {
+            display: none;
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .result-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+            margin-bottom: 2rem;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .analysis-section {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .analysis-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .analysis-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            color: #6366f1;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(99, 102, 241, 0.2);
+            color: #6366f1;
+            margin: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-message {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .file-upload-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-container:hover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .file-upload-container i {
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        #imageUpload {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-text {
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem;
+            border-radius: 12px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: rgba(99, 102, 241, 0.2);
+            color: #6366f1;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .footer a {
+            color: #6366f1;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #8b5cf6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-4xl font-bold text-center mb-8">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                Vision AI Analyzer
+            </span>
+        </h1>
+
+        <div id="result" class="result-container">
+            <div class="glass-card">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-semibold">Analysis Result</h2>
+                    <span class="tag">
+                        <i class="fas fa-clock mr-1"></i> Just now
+                    </span>
+                </div>
+
+                <img id="previewImage" class="image-preview" src="" alt="Analyzed image">
+
+                <div class="analysis-section">
+                    <div class="analysis-header">
+                        <i class="fas fa-brain analysis-icon"></i>
+                        <h3 class="text-xl font-semibold">AI Analysis</h3>
+                    </div>
+                    <div id="analysisText" class="text-gray-200 leading-relaxed whitespace-pre-wrap"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card mb-8">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('url')">
+                    <i class="fas fa-link mr-2"></i> Image URL
+                </div>
+                <div class="tab" onclick="switchTab('upload')">
+                    <i class="fas fa-upload mr-2"></i> Upload Image
+                </div>
+            </div>
+
+            <div id="urlTab" class="tab-content active">
+                <input type="text" id="imageUrl" placeholder="Paste image URL here" 
+                    class="input-field mb-4">
+                <input type="text" id="urlQuestion" placeholder="Ask a question about the image (optional)" 
+                    class="input-field mb-4">
+                <button onclick="analyzeUrl()" class="button w-full">
+                    <i class="fas fa-search mr-2"></i> Analyze Image
+                </button>
+            </div>
+
+            <div id="uploadTab" class="tab-content">
+                <div class="file-upload-container">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <div class="upload-text">
+                        <p>Drag and drop your image here</p>
+                        <p class="text-sm opacity-70">or click to browse</p>
+                    </div>
+                    <input type="file" id="imageUpload" accept="image/*">
+                </div>
+                <input type="text" id="uploadQuestion" placeholder="Ask a question about the image (optional)" 
+                    class="input-field mb-4">
+                <button onclick="analyzeUpload()" class="button w-full">
+                    <i class="fas fa-search mr-2"></i> Analyze Image
+                </button>
+            </div>
+        </div>
+
+        <div id="loader" class="loader"></div>
+        <div id="error" class="error-message"></div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="text-sm mb-2">
+                Developed and designed with ❤️ by Izhan
+            </p>
+            <p class="text-xs opacity-70">
+                &copy; 2024 Vision AI Analyzer. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function switchTab(tabName) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Add active class to selected tab and content
+            if (tabName === 'url') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('urlTab').classList.add('active');
+            } else {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('uploadTab').classList.add('active');
+            }
+        }
+
+        const loader = document.getElementById('loader');
+        const result = document.getElementById('result');
+        const error = document.getElementById('error');
+        const previewImage = document.getElementById('previewImage');
+
+        function showLoader() {
+            loader.style.display = 'block';
+            result.style.display = 'none';
+            error.style.display = 'none';
+        }
+
+        function showResult(text, imageUrl) {
+            loader.style.display = 'none';
+            result.style.display = 'block';
+            error.style.display = 'none';
+            document.getElementById('analysisText').textContent = text;
+            previewImage.src = imageUrl;
+        }
+
+        function showError(text) {
+            loader.style.display = 'none';
+            result.style.display = 'none';
+            error.style.display = 'block';
+            error.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${text}`;
+        }
+
+        async function analyzeUrl() {
+            const imageUrl = document.getElementById('imageUrl').value;
+            const question = document.getElementById('urlQuestion').value || "What's in this image?";
+            
+            if (!imageUrl) {
+                showError('Please enter an image URL');
+                return;
+            }
+
+            showLoader();
+            
+            try {
+                const response = await fetch('/analyze-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageUrl, question })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data.analysis, imageUrl);
+                } else {
+                    showError(data.error || 'Failed to analyze image');
+                }
+            } catch (error) {
+                showError('Error connecting to server');
+            }
+        }
+
+        async function analyzeUpload() {
+            const fileInput = document.getElementById('imageUpload');
+            const question = document.getElementById('uploadQuestion').value || "What's in this image?";
+            
+            if (!fileInput.files[0]) {
+                showError('Please select a file first');
+                return;
+            }
+
+            showLoader();
+
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            formData.append('question', question);
+
+            try {
+                const response = await fetch('/analyze-upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const imageUrl = URL.createObjectURL(fileInput.files[0]);
+                    showResult(data.analysis, imageUrl);
+                } else {
+                    showError(data.error || 'Failed to analyze image');
+                }
+            } catch (error) {
+                showError('Error connecting to server');
+            }
+        }
+
+        // File upload preview
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.querySelector('.upload-text').innerHTML = '<p>File selected</p><p class="text-sm opacity-70">' + 
+                        e.target.result.split('/').pop() + '</p>';
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    </script>
+</body>
+</html>
