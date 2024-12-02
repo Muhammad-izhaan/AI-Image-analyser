@@ -12,5 +12,7 @@
             "dest": "server.js"
         }
     ],
-   
+    "env": {
+        "GROQ_API_KEY": "@groq_api_key"
+    }
 }
