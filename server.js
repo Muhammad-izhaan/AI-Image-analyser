@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Public Groq API Key (for demonstration purposes)
-const GROQ_API_KEY = 'gsk_xxxxxxxxxxxxxxxxxxxxxx';
+const GROQ_API_KEY = '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';
 
 async function analyzeImage(imageData, question = "What's in this image?") {
     try {
