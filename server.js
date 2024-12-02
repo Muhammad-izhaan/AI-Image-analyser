@@ -3,7 +3,6 @@ const cors = require('cors');
 const multer = require('multer');
 const axios = require('axios');
 const path = require('path');
-require('dotenv').config();
 
 const app = express();
 const upload = multer({ 
@@ -16,11 +15,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Groq API Configuration
-const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
-if (!GROQ_API_KEY) {
-    console.error('GROQ_API_KEY is not set');
-}
+// Public Groq API Key (for demonstration purposes)
+const GROQ_API_KEY = 'gsk_xxxxxxxxxxxxxxxxxxxxxx';
 
 async function analyzeImage(imageData, question = "What's in this image?") {
     try {
